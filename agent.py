@@ -4,46 +4,16 @@ from pydantic import Field, BaseModel
 from openai import AsyncOpenAI
 import asyncio
 from dotenv import load_dotenv
+from tools import tool, tools, tool_registry
 
 load_dotenv()
 
-class MultiplierParams(BaseModel):
-    x:float=Field(...,description="乘数1")
-    y:float=Field(...,description="乘数2")
-
-class ReadDirParams(BaseModel):
-    dir_path:str=Field(...,description="文件目录地址")
-
+@tool
 def multiplier(x:float, y:float):
     return x*y
-
+@tool
 def read_dir(dir_path:str):
     return os.listdir(dir_path)
-
-tools=[
-    {
-        "type":"function",
-        "function":{
-            "name":"multiplier",
-            "description":"乘法器",
-            "parameters":MultiplierParams.model_json_schema()
-        }
-    },
-
-    {
-        "type":"function",
-        "function":{
-            "name":"read_dir",
-            "description":"读取文件目录",
-            "parameters":ReadDirParams.model_json_schema()
-        }
-    },
-]
-
-tool_registry={
-    "multiplier":(MultiplierParams,multiplier),
-    "read_dir":(ReadDirParams,read_dir),
-}
 
 client=AsyncOpenAI(
     api_key=os.environ.get("api_key"),
